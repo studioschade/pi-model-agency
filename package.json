@@ -1,7 +1,7 @@
 {
   "name": "pi-model-agency",
   "version": "0.2.0",
-  "private": true,
+  "private": false,
   "description": "On-demand model and session awareness with scoped, honest controls for Pi agents.",
   "repository": {
     "type": "git",
