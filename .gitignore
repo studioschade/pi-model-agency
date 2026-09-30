@@ -1,0 +1,8 @@
+node_modules/
+ext-copy.ts
+SESSION-HANDOFF*.md
+# Local project records; excluded from the public source snapshot.
+DESIGN.md
+RELEASE.md
+RELEASES.md
+project.md

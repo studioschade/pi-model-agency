@@ -1,0 +1,71 @@
+# Forgejo source → GitHub push mirror. Tag pushes are NOT Forgejo Release events.
+# Only the release owner may create v* tags in the source Release form.
+# Protect source tags and restrict mirrored tag creation to the mirror credential.
+name: Publish npm from mirrored release tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read # no OIDC in the test job
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify tag belongs to source branch
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          git fetch --no-tags origin master
+          git merge-base --is-ancestor HEAD origin/master
+          case "$RELEASE_TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo 'Release tag format invalid' >&2; exit 1 ;;
+          esac
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:sdk
+      - name: Refuse false-green publish before first npm bootstrap
+        if: vars.NPM_OIDC_READY != 'true'
+        run: |
+          echo '::error::npm OIDC not enabled. First package publication must be explicitly approved and performed before binding the trusted publisher. Nothing was published.'
+          exit 1
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest # npm trusted publishing requires a GitHub-hosted runner
+    environment: npm-publish # restrict to v* tags; bind this name in npm's publisher settings
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Require npm CLI >=11.5.1 for trusted publishing
+        run: |
+          node -e 'const [a,b,c]=require("child_process").execFileSync("npm",["--version"],{encoding:"utf8"}).trim().split(".").map(Number); if(a<11 || (a===11 && (b<5 || (b===5 && c<1)))) {console.error("npm >=11.5.1 required for OIDC");process.exit(1)}'
+      - name: Verify version, license and exact package contents (no install scripts)
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE: '1'
+        run: |
+          node tests/release-check.mjs
+          node tests/pack-check.mjs
+      - name: Publish without a token or lifecycle scripts
+        run: npm publish --ignore-scripts --access public

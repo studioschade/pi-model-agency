@@ -1,0 +1,45 @@
+{
+  "name": "pi-model-agency",
+  "version": "0.2.0",
+  "private": true,
+  "description": "On-demand model and session awareness with scoped, honest controls for Pi agents.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/studioschade/pi-model-agency.git"
+  },
+  "homepage": "https://github.com/studioschade/pi-model-agency#readme",
+  "type": "module",
+  "license": "GPL-3.0-only",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./extension.ts"
+    ]
+  },
+  "engines": {
+    "node": ">=22.19"
+  },
+  "files": [
+    "extension.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bash tests/run.sh",
+    "typecheck": "tsc -p tsconfig.json",
+    "test:sdk": "node tests/runtime-reload.mjs",
+    "pack:check": "node tests/pack-check.mjs",
+    "release:check": "node tests/release-check.mjs"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.87.1",
+    "@types/node": "22.20.4",
+    "typescript": "5.9.3"
+  }
+}
