@@ -14,8 +14,6 @@ The aim is more than access to a stronger model. It is an agent that can partici
 
 A [Pi](https://github.com/earendil-works/pi) extension for on-demand runtime awareness and session control.
 
-> **Pre-release:** v0.2.0, GPL-3.0-only. Installation currently uses a local checkout.
-
 ```text
 agent asks                         Pi-owned boundary               observed result
 ──────────                         ─────────────────               ───────────────
@@ -43,14 +41,11 @@ This is illustrative output, **not** a live reading of your session. For reporte
 
 ## Install
 
-Before the first public release, use a reviewed local checkout:
-
 ```bash
-pi install /absolute/path/to/pi-model-agency
-# Or try it for one Pi run: pi -e /absolute/path/to/pi-model-agency
+pi install npm:pi-model-agency
 ```
 
-After npm publication, the intended command is `pi install npm:pi-model-agency`. Pi packages execute arbitrary code with your account's permissions: review the source before installing. Node.js 22.19+ is required for this package's published test setup. The SDK lifecycle test passes against npm-published `@earendil-works/pi-coding-agent@0.87.1`; broader compatibility is not claimed.
+Pi packages run with your account's permissions, so review the source before installing. Requires Node.js 22.19 or later. Tested with `@earendil-works/pi-coding-agent` 0.87.1.
 
 Pi's **explicit session model scope** is the authority for agent-driven switching. With no scope configured, `agency_models` explains that the session is unscoped and `switch_model` refuses; use Pi's interactive `/model` instead or launch with an explicit `--models` scope. A Pi resource reload does **not** update that process-start scope; restart the session to change it.
 
@@ -126,7 +121,7 @@ npm ci
 npm run typecheck        # strict TypeScript validation against Pi's public types
 npm test                 # deterministic behavioral checks
 npm run test:sdk         # real Pi SDK reload lifecycle; no model/network
-npm run pack:check       # verifies GPL license + exact tarball allowlist + pre-release private gate
+npm run pack:check       # verifies the license and the exact package contents
 ```
 
 Tests use private SDK hooks **only inside the test harness** to drive an idle boundary without inference. The runtime extension uses documented Pi APIs.
